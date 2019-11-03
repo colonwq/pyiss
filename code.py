@@ -165,7 +165,7 @@ while True:
         while not _esp.is_connected:
             # settings dictionary must contain 'ssid' and 'password' at a minimum
             print("ESP32 CONNECTING...")
-            status[0] = (100, 0, 0) # red = not connected
+            neo_status((100, 0, 0)) # WARNING # red = not connected
             _connect_esp()
             print("ESP32 CONNECTED!")
         else:
