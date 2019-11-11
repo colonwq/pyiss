@@ -14,7 +14,9 @@ import math
 from adafruit_bitmap_font import bitmap_font
 from adafruit_display_shapes.circle import Circle
 
-red_circle = None
+iss_tile = None
+tail_group = None
+tail_length = 30
 #I googled "iss location api" and this is one of the first sites to come up
 WHERETHEISS="https://api.wheretheiss.at/v1/satellites/25544"
 
@@ -159,6 +161,23 @@ for bootscreen in ("/pyportal_startup.bmp", "/earth-nasa.bmp"):
     except OSError:
         pass # they removed it, skip!
 
+if iss_tile is None:
+    print("Need to make the iss")
+    iss_file = open("/iss-silhouette.bmp","rb")
+    iss_bmp = displayio.OnDiskBitmap(iss_file)
+    iss_tile = displayio.TileGrid(iss_bmp,
+        pixel_shader=displayio.ColorConverter())
+    group.append(iss_tile)
+
+if tail_group is None:
+    print("Need to create iss trail")
+    tail_bmp = displayio.Bitmap(2,2,1)
+    tail_palette = displayio.Palette(1)
+    tail_palette[0] = 0xFF0000
+    tail_group = displayio.Group(max_size=tail_length)
+    #board.DISPLAY.show(tail_group)
+    group.append(tail_group)
+
 while True:
     try:
         neo_status((0,0,100))
@@ -192,6 +211,19 @@ while True:
     x = coordinates[0]
     y = coordinates[1]
 
+    tail_x = x
+    tail_y = y
+
+    if x < 16 :
+        x = 320  - 16 - x
+    else:
+        x = x - 16
+
+    if y < 16 :
+        y = 240 - 16 - y
+    else:
+        y = y - 16
+
 #    #math seems off. Let me fudge it
 #    #could the the quality of the image from wekimedia
 #    if x - 5 < 0 :
@@ -204,19 +236,19 @@ while True:
 #    else:
 #        y -= 5
 
-    if red_circle is None:
-        print("Need to make the first dot")
-        red_circle = Circle(
-            x0=x,
-            y0=y,
-            r=5,
-            fill=0xFF0000,
-            outline=0xFFFFFF,
-            )
-        group.append(red_circle)
-    else:
-        red_circle.x = x
-        red_circle.y = y
+    iss_tile.x = x
+    iss_tile.y = y
+
+    #print("Lenght of the tail group: ", len(t.__len__())ail_group))
+    if(len(tail_group) >= tail_length ):
+        print("Popping off the tail")
+        tail_group.pop(0)
+
+    new_tail = displayio.TileGrid(tail_bmp, pixel_shader=tail_palette )
+    new_tail.x = tail_x
+    new_tail.y = tail_y
+    tail_group.append(new_tail)
+
 
     print("Sleeping for 60 seconds")
     time.sleep(60)
