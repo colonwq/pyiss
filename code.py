@@ -12,11 +12,8 @@ import storage
 import displayio
 import math
 from adafruit_bitmap_font import bitmap_font
-from adafruit_display_shapes.circle import Circle
 
-iss_tile = None
-tail_group = None
-tail_length = 30
+tail_length = 90
 #I googled "iss location api" and this is one of the first sites to come up
 WHERETHEISS="https://api.wheretheiss.at/v1/satellites/25544"
 
@@ -161,22 +158,22 @@ for bootscreen in ("/pyportal_startup.bmp", "/earth-nasa.bmp"):
     except OSError:
         pass # they removed it, skip!
 
-if iss_tile is None:
-    print("Need to make the iss")
-    iss_file = open("/iss-silhouette.bmp","rb")
-    iss_bmp = displayio.OnDiskBitmap(iss_file)
-    iss_tile = displayio.TileGrid(iss_bmp,
-        pixel_shader=displayio.ColorConverter())
-    group.append(iss_tile)
+print("Need to make the iss")
+iss_file = open("/iss-silhouette.bmp","rb")
+iss_bmp = displayio.OnDiskBitmap(iss_file)
+iss_tile = displayio.TileGrid(iss_bmp,
+    pixel_shader=displayio.ColorConverter())
+group.append(iss_tile)
 
-if tail_group is None:
-    print("Need to create iss trail")
-    tail_bmp = displayio.Bitmap(2,2,1)
-    tail_palette = displayio.Palette(1)
-    tail_palette[0] = 0xFF0000
-    tail_group = displayio.Group(max_size=tail_length)
-    #board.DISPLAY.show(tail_group)
-    group.append(tail_group)
+print("Need to create iss tail")
+tail_bmp = displayio.Bitmap(2,2,1)
+tail_palette = displayio.Palette(1)
+tail_palette[0] = 0xFF0000
+tail_group = displayio.Group(max_size=tail_length)
+group.append(tail_group)
+
+#My image layers are now background, iss bmp, iss tail
+
 
 while True:
     try:
@@ -249,6 +246,9 @@ while True:
     new_tail.y = tail_y
     tail_group.append(new_tail)
 
+    print("Amount of free memory: ", gc.mem_free() )
+    gc.collect()
+    print("Amount of free ememory (after collect)", gc.mem_free())
 
     print("Sleeping for 60 seconds")
     time.sleep(60)
